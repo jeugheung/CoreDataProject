@@ -12,9 +12,28 @@ class TableViewController: UITableViewController {
     
     var tasks: [Task] = []
     
-    private func saveTask(withTitle title: String) {
+    private func getContext() -> NSManagedObjectContext {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let context = appDelegate.persistentContainer.viewContext
+        return appDelegate.persistentContainer.viewContext
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+      
+        let context = getContext()
+        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        do {
+            tasks = try context.fetch(fetchRequest)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
+    private func saveTask(withTitle title: String) {
+        let context = getContext()
         
         guard let entity = NSEntityDescription.entity(forEntityName: "Task", in: context) else { return }
         
@@ -23,16 +42,31 @@ class TableViewController: UITableViewController {
         
         do {
             try context.save()
-            
+            tasks.append(taskObject)
         } catch let error as NSError {
             print(error.localizedDescription)
-            
         }
+        
         
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        //Delete table
+//        let context = getContext()
+//        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+//
+//        if let objects = try? context.fetch(fetchRequest) {
+//            for object in objects {
+//                context.delete(object)
+//            }
+//        }
+//
+//        do {
+//            try context.save()
+//        } catch let error as NSError {
+//            print(error.localizedDescription)
+//        }
         
     }
     
